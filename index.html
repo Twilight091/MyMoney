@@ -2097,6 +2097,14 @@ if ('serviceWorker' in navigator) {
                     }
                 });
 
+                // Destroy existing charts first to prevent overlap
+Object.keys(this.data.charts).forEach(key => {
+    if (this.data.charts[key]) {
+        this.data.charts[key].destroy();
+    }
+});
+this.data.charts = {};
+                
                 this.createChart('monthlyChart', 'line', {
                     labels: Array.from({length: daysInMonth}, (_, i) => i + 1),
                     datasets: [{
