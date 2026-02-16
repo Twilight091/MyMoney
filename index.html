@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0F1220">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>MyMoney Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        :root {
+            --primary: #6C63FF;
+            --accent: #00D2FF;
+            --success: #2ECC71;
+            --warning: #F1C40F;
+            --danger: #E74C3C;
+            --bg: #0F1220;
+            --surface: rgba(255, 255, 255, 0.05);
+            --surface-hover: rgba(255, 255, 255, 0.08);
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg: #F5F7FA;
+            --surface: rgba(255, 255, 255, 0.8);
+            --surface-hover: rgba(255, 255, 255, 0.95);
+            --text-primary: #1A1A2E;
+            --text-secondary: rgba(26, 26, 46, 0.6);
+            --border: rgba(0, 0, 0, 0.1);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.3s ease;
+            padding-bottom: 100px;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(108, 99, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(0, 210, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .page {
+            display: none;
+            padding: 20px;
+            min-height: 100vh;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .icon-btn:hover {
+            background: var(--surface-hover);
+            transform: scale(1.05);
+        }
+
+        .glass-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .glass-card:active {
+            transform: scale(0.98);
+        }
+
+        .balance-card {
+            text-align: center;
+            padding: 32px 20px;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(0, 210, 255, 0.1));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .balance-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .balance-amount {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: var(--surface-hover);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-value.income { color: var(--success); }
+        .stat-value.expense { color: var(--danger); }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .progress-ring {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+            width: 80px;
+            height: 80px;
+        }
+
+        .progress-ring-bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 8;
+        }
+
+        .progress-ring-fill {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .progress-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .progress-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            border: none;
+            background: transparent;
+            font-size: 11px;
+            flex: 1;
+            max-width: 80px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(108, 99, 255, 0.4);
+            transition: all 0.2s ease;
+            margin-top: -20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(108, 99, 255, 0.6);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .radio-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .radio-btn.active {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .radio-btn.income.active {
+            border-color: var(--success);
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+        }
+
+        .radio-btn.expense.active {
+            border-color: var(--danger);
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 4px 20px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .transaction-item {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .transaction-item:hover {
+            background: var(--surface-hover);
+            transform: translateX(4px);
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .transaction-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .transaction-icon.income { background: rgba(46, 204, 113, 0.2); }
+        .transaction-icon.expense { background: rgba(231, 76, 60, 0.2); }
+
+        .transaction-details {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .transaction-details h4 {
+            font-size: 16px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .transaction-details p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .transaction-amount {
+            font-size: 18px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .transaction-amount.income { color: var(--success); }
+        .transaction-amount.expense { color: var(--danger); }
+
+        .transaction-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .btn-edit {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .chart-container {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chart-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .loan-card {
+            border-left: 4px solid;
+        }
+
+        .loan-card.lent { border-left-color: var(--success); }
+        .loan-card.borrowed { border-left-color: var(--accent); }
+
+        .loan-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .loan-status.paid {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success);
+        }
+
+        .loan-status.unpaid {
+            background: rgba(241, 196, 15, 0.2);
+            color: var(--warning);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            gap: 16px;
+        }
+
+        .setting-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .setting-info h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .setting-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .toggle {
+            width: 52px;
+            height: 28px;
+            background: var(--border);
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle.active {
+            background: var(--primary);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle.active::after {
+            left: 26px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            padding: 20px;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-y: auto;
+            padding-top: 50px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg);
+            border-radius: 24px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border);
+            animation: slideUp 0.3s ease;
+            position: relative;
+            margin-bottom: 50px;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--surface);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 16px; }
+        .mb-4 { margin-bottom: 16px; }
+        .hidden { display: none !important; }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            z-index: 3000;
+            font-weight: 500;
+            animation: slideUp 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 380px) {
+            .balance-amount { font-size: 32px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .nav-item { padding: 6px 8px; font-size: 10px; }
+            .nav-item svg { width: 20px; height: 20px; }
+        }
+
+        .danger-zone {
+            border: 1px solid var(--danger) !important;
+            background: rgba(231, 76, 60, 0.05) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <!-- Home Page -->
+    <div id="page-home" class="page active">
+        <div class="header">
+            <h1>MyMoney Pro</h1>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="app.refreshData()" title="Refresh">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-card balance-card">
+            <div class="balance-label">Total Balance</div>
+            <div class="balance-amount" id="total-balance">$0.00</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Income</div>
+                <div class="stat-value income" id="month-income">+$0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Expense</div>
+                <div class="stat-value expense" id="month-expense">-$0.00</div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="progress-container">
+                <div class="progress-ring">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <circle class="progress-ring-bg" cx="40" cy="40" r="36"/>
+                        <circle class="progress-ring-fill" id="budget-ring" cx="40" cy="40" r="36" 
+                                stroke-dasharray="226.19" stroke-dashoffset="226.19"/>
+                    </svg>
+                    <div class="progress-text" id="budget-percent">0%</div>
+                </div>
+                <div class="progress-info">
+                    <h3>Monthly Budget</h3>
+                    <p id="budget-text">$0 / $0</p>
+                    <small id="budget-warning" style="color: var(--warning); display: none; margin-top: 4px; display: block;">⚠️ Approaching limit</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3 style="margin-bottom: 16px; font-size: 18px;">Loan Summary</h3>
+            <div class="stats-grid" style="margin-bottom: 0;">
+                <div>
+                    <div class="stat-label">Total Lent</div>
+                    <div class="stat-value income" id="total-lent">$0.00</div>
+                </div>
+                <div>
+                    <div class="stat-label">Total Borrowed</div>
+                    <div class="stat-value" style="color: var(--accent);" id="total-borrowed">$0.00</div>
+                </div>
+            </div>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <div class="stat-label">Net Balance</div>
+                <div class="stat-value" id="loan-net" style="font-size: 24px;">$0.00</div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 18px;">Recent Transactions</h3>
+                <button class="filter-btn" onclick="app.navigate('transactions')">View All</button>
+            </div>
+            <div id="recent-transactions" class="transaction-list">
+                <div class="empty-state">
+                    <p>No transactions yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions Page -->
+    <div id="page-transactions" class="page">
+        <div class="header">
+            <h1>Transactions</h1>
+        </div>
+
+        <div class="chart-filters mb-4">
+            <button class="filter-btn active" onclick="app.filterTransactions('all')">All</button>
+            <button class="filter-btn" onclick="app.filterTransactions('income')">Income</button>
+            <button class="filter-btn" onclick="app.filterTransactions('expense')">Expense</button>
+        </div>
+
+        <div id="all-transactions" class="transaction-list">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <p>No transactions found</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Page -->
+    <div id="page-reports" class="page">
+        <div class="header">
+            <h1>Reports</h1>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <span class="chart-title">Monthly Expense</span>
+                <input type="month" id="report-month" class="form-input" style="width: auto; padding: 8px;" onchange="app.updateCharts()">
+            </div>
+            <canvas id="monthlyChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <span class="chart-title">Yearly Overview</span>
+                <select id="report-year" class="form-select" style="width: auto; padding: 8px;" onchange="app.updateCharts()">
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+            <canvas id="yearlyChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <span class="chart-title">Income vs Expense</span>
+            </div>
+            <canvas id="comparisonChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <span class="chart-title">Categories</span>
+            </div>
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Loans Page -->
+    <div id="page-loans" class="page">
+        <div class="header">
+            <h1>Loans</h1>
+            <button class="icon-btn" onclick="app.openLoanModal()" title="Add Loan">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="glass-card">
+            <div class="progress-container">
+                <div class="progress-ring">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <circle class="progress-ring-bg" cx="40" cy="40" r="36"/>
+                        <circle class="progress-ring-fill" id="loan-ring" cx="40" cy="40" r="36" 
+                                stroke-dasharray="226.19" stroke-dashoffset="226.19" stroke="var(--success)"/>
+                    </svg>
+                    <div class="progress-text" id="loan-percent">0%</div>
+                </div>
+                <div class="progress-info">
+                    <h3>Repayment Progress</h3>
+                    <p id="loan-progress-text">0 paid / 0 total</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-filters mb-4">
+            <button class="filter-btn active" onclick="app.filterLoans('all')">All</button>
+            <button class="filter-btn" onclick="app.filterLoans('lent')">Lent</button>
+            <button class="filter-btn" onclick="app.filterLoans('borrowed')">Borrowed</button>
+        </div>
+
+        <div id="loans-list" class="transaction-list">
+            <div class="empty-state">
+                <p>No loans recorded</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div id="page-settings" class="page">
+        <div class="header">
+            <h1>Settings</h1>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <h4>Dark Mode</h4>
+                <p>Toggle between light and dark theme</p>
+            </div>
+            <div class="toggle active" id="theme-toggle" onclick="app.toggleTheme()"></div>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <h4>Currency</h4>
+                <p>Select your preferred currency</p>
+            </div>
+            <select class="form-select" style="width: auto; min-width: 120px;" id="currency-select" onchange="app.setCurrency(this.value)">
+                <option value="$">USD ($)</option>
+                <option value="€">EUR (€)</option>
+                <option value="£">GBP (£)</option>
+                <option value="¥">JPY (¥)</option>
+                <option value="₹">INR (₹)</option>
+            </select>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <h4>Monthly Budget</h4>
+                <p>Set your monthly spending limit</p>
+            </div>
+            <input type="number" class="form-input" style="width: 140px;" id="budget-input" 
+                   placeholder="2000" onchange="app.setBudget(this.value)">
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <h4>Month Start Day</h4>
+                <p>When does your month begin?</p>
+            </div>
+            <select class="form-select" style="width: auto; min-width: 100px;" id="month-start-select" onchange="app.setMonthStart(this.value)">
+                <option value="1">1st</option>
+                <option value="15">15th</option>
+            </select>
+        </div>
+
+        <div class="glass-card danger-zone mt-4">
+            <h4 style="color: var(--danger); margin-bottom: 12px;">⚠️ Danger Zone</h4>
+            <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">
+                This will permanently delete all your data including transactions, loans, and settings.
+            </p>
+            <button class="btn btn-danger" onclick="app.resetAllData()">Reset All Data</button>
+        </div>
+
+        <div class="text-center mt-4" style="color: var(--text-secondary); font-size: 12px; padding-bottom: 20px;">
+            <p>MyMoney Pro v1.0</p>
+            <p>Offline PWA • No data leaves your device</p>
+            <p>© 2026 Twilight091 & Uncagedraptor80 – Built with passion. All rights reserved. </p>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="app.navigate('home')" data-page="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="app.navigate('transactions')" data-page="transactions">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>History</span>
+        </button>
+        <button class="fab" onclick="app.openTransactionModal()" title="Add Transaction">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+        </button>
+        <button class="nav-item" onclick="app.navigate('reports')" data-page="reports">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+            <span>Reports</span>
+        </button>
+        <button class="nav-item" onclick="app.navigate('loans')" data-page="loans">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M16 8h-6a2 2 0 00-2 2v4a2 2 0 002 2h6"/>
+                <path d="M12 12h.01"/>
+            </svg>
+            <span>Loans</span>
+        </button>
+        <button class="nav-item" onclick="app.navigate('settings')" data-page="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+    <!-- Transaction Modal -->
+    <div id="transaction-modal" class="modal" onclick="if(event.target === this) app.closeModal('transaction-modal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="transaction-modal-title">Add Transaction</h2>
+                <button type="button" class="close-btn" onclick="app.closeModal('transaction-modal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="transaction-form" onsubmit="app.saveTransaction(event); return false;">
+                <input type="hidden" id="transaction-id">
+                
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <div class="radio-group">
+                        <button type="button" class="radio-btn income" onclick="app.setTransactionType('income')" id="btn-income">Income</button>
+                        <button type="button" class="radio-btn expense active" onclick="app.setTransactionType('expense')" id="btn-expense">Expense</button>
+                    </div>
+                    <input type="hidden" id="transaction-type" value="expense">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount *</label>
+                    <input type="number" step="0.01" min="0.01" class="form-input" id="transaction-amount" required placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category *</label>
+                    <select class="form-select" id="transaction-category" required>
+                        <!-- Options populated by JS based on type -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date *</label>
+                    <input type="date" class="form-input" id="transaction-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Note (Optional)</label>
+                    <input type="text" class="form-input" id="transaction-note" placeholder="Add a note...">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loan Modal -->
+    <div id="loan-modal" class="modal" onclick="if(event.target === this) app.closeModal('loan-modal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="loan-modal-title">Add Loan</h2>
+                <button type="button" class="close-btn" onclick="app.closeModal('loan-modal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="loan-form" onsubmit="app.saveLoan(event); return false;">
+                <input type="hidden" id="loan-id">
+                
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <div class="radio-group">
+                        <button type="button" class="radio-btn income" onclick="app.setLoanType('lent')" id="btn-lent">Lent (They owe me)</button>
+                        <button type="button" class="radio-btn expense active" onclick="app.setLoanType('borrowed')" id="btn-borrowed">Borrowed (I owe)</button>
+                    </div>
+                    <input type="hidden" id="loan-type" value="borrowed">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Person Name *</label>
+                    <input type="text" class="form-input" id="loan-person" required placeholder="John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount *</label>
+                    <input type="number" step="0.01" min="0.01" class="form-input" id="loan-amount" required placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date *</label>
+                    <input type="date" class="form-input" id="loan-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Note (Optional)</label>
+                    <input type="text" class="form-input" id="loan-note" placeholder="Add details...">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Loan</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Service Worker Registration (only on HTTPS or localhost)
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
+        // Database Setup
+        const DB_NAME = 'MyMoneyProDB';
+        const DB_VERSION = 1;
+        let db;
+
+        const initDB = () => {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => {
+                    console.error('DB Error:', request.error);
+                    reject(request.error);
+                };
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    console.log('DB opened successfully');
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    console.log('DB upgrade needed');
+                    const db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains('transactions')) {
+                        const txStore = db.createObjectStore('transactions', { keyPath: 'id', autoIncrement: true });
+                        txStore.createIndex('date', 'date', { unique: false });
+                        txStore.createIndex('type', 'type', { unique: false });
+                    }
+                    
+                    if (!db.objectStoreNames.contains('loans')) {
+                        const loanStore = db.createObjectStore('loans', { keyPath: 'id', autoIncrement: true });
+                        loanStore.createIndex('status', 'status', { unique: false });
+                    }
+                    
+                    if (!db.objectStoreNames.contains('settings')) {
+                        db.createObjectStore('settings', { keyPath: 'key' });
+                    }
+                };
+            });
+        };
+
+        // Helper function to safely get all data from store
+        const getAllFromStore = (storeName) => {
+            return new Promise((resolve) => {
+                if (!db) {
+                    resolve([]);
+                    return;
+                }
+                
+                try {
+                    const transaction = db.transaction(storeName, 'readonly');
+                    const store = transaction.objectStore(storeName);
+                    const request = store.getAll();
+                    
+                    request.onsuccess = () => {
+                        resolve(request.result || []);
+                    };
+                    
+                    request.onerror = () => {
+                        console.error(`Error getting ${storeName}:`, request.error);
+                        resolve([]);
+                    };
+                } catch (error) {
+                    console.error(`Exception getting ${storeName}:`, error);
+                    resolve([]);
+                }
+            });
+        };
+
+        // App Logic
+        const app = {
+            data: {
+                transactions: [],
+                loans: [],
+                settings: {
+                    currency: '$',
+                    budget: 2000,
+                    monthStart: 1,
+                    darkMode: true
+                },
+                charts: {},
+                currentPage: 'home'
+            },
+
+            categories: {
+                income: [
+                    { value: 'Salary', icon: '💰', label: 'Salary' },
+                    { value: 'Freelance', icon: '💻', label: 'Freelance' },
+                    { value: 'Investment', icon: '📈', label: 'Investment' },
+                    { value: 'Gift', icon: '🎁', label: 'Gift' },
+                    { value: 'Other Income', icon: '💵', label: 'Other Income' }
+                ],
+                expense: [
+                    { value: 'Food', icon: '🍔', label: 'Food' },
+                    { value: 'Transport', icon: '🚗', label: 'Transport' },
+                    { value: 'Rent', icon: '🏠', label: 'Rent' },
+                    { value: 'Bills', icon: '💡', label: 'Bills' },
+                    { value: 'Shopping', icon: '🛍️', label: 'Shopping' },
+                    { value: 'Entertainment', icon: '🎬', label: 'Entertainment' },
+                    { value: 'Health', icon: '⚕️', label: 'Health' },
+                    { value: 'Education', icon: '📚', label: 'Education' },
+                    { value: 'Others', icon: '📦', label: 'Others' }
+                ]
+            },
+
+            async init() {
+                try {
+                    console.log('Initializing app...');
+                    await initDB();
+                    await this.loadData();
+                    this.setupEventListeners();
+                    
+                    // Initialize category dropdown
+                    this.updateCategoryOptions('expense');
+                    
+                    // Set default dates
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('transaction-date').value = today;
+                    document.getElementById('loan-date').value = today;
+                    document.getElementById('report-month').value = new Date().toISOString().slice(0, 7);
+                    document.getElementById('report-year').value = new Date().getFullYear();
+                    
+                    // Update settings UI
+                    document.getElementById('currency-select').value = this.data.settings.currency;
+                    document.getElementById('budget-input').value = this.data.settings.budget;
+                    document.getElementById('month-start-select').value = this.data.settings.monthStart;
+                    
+                    this.updateUI();
+                    console.log('App initialized successfully');
+                    console.log('Transactions:', this.data.transactions.length);
+                    console.log('Loans:', this.data.loans.length);
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    this.showToast('Error initializing app: ' + error.message);
+                }
+            },
+
+            async loadData() {
+                console.log('Loading data...');
+                
+                // Load transactions with fallback
+                this.data.transactions = await getAllFromStore('transactions');
+                console.log('Loaded transactions:', this.data.transactions);
+                
+                // Load loans with fallback
+                this.data.loans = await getAllFromStore('loans');
+                console.log('Loaded loans:', this.data.loans);
+                
+                // Load settings with fallback
+                const settings = await getAllFromStore('settings');
+                console.log('Loaded settings:', settings);
+                
+                // Ensure settings is an array
+                if (Array.isArray(settings)) {
+                    settings.forEach(s => {
+                        if (s && s.key in this.data.settings) {
+                            this.data.settings[s.key] = s.value;
+                        }
+                    });
+                }
+                
+                // Apply theme
+                if (!this.data.settings.darkMode) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    const toggle = document.getElementById('theme-toggle');
+                    if (toggle) toggle.classList.remove('active');
+                }
+            },
+
+            setupEventListeners() {
+                window.addEventListener('online', () => this.showToast('Back online'));
+                window.addEventListener('offline', () => this.showToast('Offline mode'));
+            },
+
+            navigate(page) {
+                this.data.currentPage = page;
+                
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const targetPage = document.getElementById(`page-${page}`);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    window.scrollTo(0, 0);
+                }
+                
+                document.querySelectorAll('.nav-item').forEach(n => {
+                    n.classList.remove('active');
+                    if (n.dataset.page === page) {
+                        n.classList.add('active');
+                    }
+                });
+                
+                if (page === 'reports') {
+                    setTimeout(() => this.updateCharts(), 100);
+                }
+            },
+
+            // Category Management
+            updateCategoryOptions(type) {
+                const select = document.getElementById('transaction-category');
+                if (!select) return;
+                
+                const categories = this.categories[type] || this.categories.expense;
+                
+                select.innerHTML = categories.map(cat => 
+                    `<option value="${cat.value}">${cat.icon} ${cat.label}</option>`
+                ).join('');
+            },
+
+            // Transaction Management
+            openTransactionModal(editId = null) {
+                const modal = document.getElementById('transaction-modal');
+                const form = document.getElementById('transaction-form');
+                
+                if (!modal || !form) return;
+                
+                // Reset form first
+                form.reset();
+                document.getElementById('transaction-id').value = '';
+                
+                // Set default date
+                const dateInput = document.getElementById('transaction-date');
+                if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+                
+                if (editId) {
+                    const tx = this.data.transactions.find(t => t.id === editId);
+                    if (!tx) {
+                        this.showToast('Transaction not found');
+                        return;
+                    }
+                    
+                    document.getElementById('transaction-modal-title').textContent = 'Edit Transaction';
+                    document.getElementById('transaction-id').value = tx.id;
+                    document.getElementById('transaction-amount').value = tx.amount;
+                    document.getElementById('transaction-date').value = tx.date;
+                    document.getElementById('transaction-note').value = tx.note || '';
+                    
+                    // Set type first, then category
+                    this.setTransactionType(tx.type);
+                    setTimeout(() => {
+                        const catSelect = document.getElementById('transaction-category');
+                        if (catSelect) catSelect.value = tx.category;
+                    }, 0);
+                } else {
+                    document.getElementById('transaction-modal-title').textContent = 'Add Transaction';
+                    this.setTransactionType('expense');
+                }
+                
+                modal.classList.add('active');
+            },
+
+            setTransactionType(type) {
+                const typeInput = document.getElementById('transaction-type');
+                const btnIncome = document.getElementById('btn-income');
+                const btnExpense = document.getElementById('btn-expense');
+                
+                if (typeInput) typeInput.value = type;
+                
+                // Update button styles
+                if (btnIncome) btnIncome.classList.toggle('active', type === 'income');
+                if (btnExpense) btnExpense.classList.toggle('active', type === 'expense');
+                
+                // Update category options
+                this.updateCategoryOptions(type);
+            },
+
+            async saveTransaction(e) {
+                e.preventDefault();
+                
+                try {
+                    const idInput = document.getElementById('transaction-id');
+                    const amountInput = document.getElementById('transaction-amount');
+                    const typeInput = document.getElementById('transaction-type');
+                    const categoryInput = document.getElementById('transaction-category');
+                    const dateInput = document.getElementById('transaction-date');
+                    const noteInput = document.getElementById('transaction-note');
+                    
+                    if (!amountInput || !categoryInput || !dateInput) {
+                        this.showToast('Form elements not found');
+                        return;
+                    }
+                    
+                    const amount = parseFloat(amountInput.value);
+                    const type = typeInput ? typeInput.value : 'expense';
+                    const category = categoryInput.value;
+                    const date = dateInput.value;
+                    const note = noteInput ? noteInput.value.trim() : '';
+                    
+                    // Validation
+                    if (!amount || isNaN(amount) || amount <= 0) {
+                        this.showToast('Please enter a valid amount greater than 0');
+                        return;
+                    }
+                    
+                    if (!category) {
+                        this.showToast('Please select a category');
+                        return;
+                    }
+                    
+                    if (!date) {
+                        this.showToast('Please select a date');
+                        return;
+                    }
+                    
+                    const transaction = {
+                        type: type,
+                        amount: amount,
+                        category: category,
+                        date: date,
+                        note: note,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    console.log('Saving transaction:', transaction);
+                    
+                    if (!db) {
+                        this.showToast('Database not ready');
+                        return;
+                    }
+                    
+                    const store = db.transaction('transactions', 'readwrite').objectStore('transactions');
+                    
+                    if (idInput && idInput.value) {
+                        transaction.id = parseInt(idInput.value);
+                        await new Promise((resolve, reject) => {
+                            const request = store.put(transaction);
+                            request.onsuccess = () => resolve();
+                            request.onerror = () => reject(request.error);
+                        });
+                        
+                        const idx = this.data.transactions.findIndex(t => t.id === transaction.id);
+                        if (idx !== -1) {
+                            this.data.transactions[idx] = transaction;
+                        }
+                        console.log('Updated transaction:', transaction.id);
+                    } else {
+                        const newId = await new Promise((resolve, reject) => {
+                            const request = store.add(transaction);
+                            request.onsuccess = () => resolve(request.result);
+                            request.onerror = () => reject(request.error);
+                        });
+                        
+                        transaction.id = newId;
+                        
+                        // Ensure transactions is an array
+                        if (!Array.isArray(this.data.transactions)) {
+                            this.data.transactions = [];
+                        }
+                        this.data.transactions.push(transaction);
+                        console.log('Added transaction:', newId);
+                    }
+
+                    this.closeModal('transaction-modal');
+                    this.updateUI();
+                    this.showToast(idInput && idInput.value ? 'Transaction updated' : 'Transaction added');
+                    
+                } catch (error) {
+                    console.error('Save transaction error:', error);
+                    this.showToast('Error saving transaction: ' + error.message);
+                }
+            },
+
+            async deleteTransaction(id) {
+                if (!confirm('Delete this transaction?')) return;
+                try {
+                    if (!db) return;
+                    
+                    await new Promise((resolve, reject) => {
+                        const store = db.transaction('transactions', 'readwrite').objectStore('transactions');
+                        const request = store.delete(id);
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    // Ensure transactions is an array before filtering
+                    if (!Array.isArray(this.data.transactions)) {
+                        this.data.transactions = [];
+                    }
+                    this.data.transactions = this.data.transactions.filter(t => t.id !== id);
+                    this.updateUI();
+                    this.showToast('Transaction deleted');
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    this.showToast('Error deleting transaction');
+                }
+            },
+
+            filterTransactions(filter) {
+                document.querySelectorAll('#page-transactions .filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase().includes(filter)) btn.classList.add('active');
+                });
+                this.renderTransactions(filter);
+            },
+
+            // Loan Management
+            openLoanModal(editId = null) {
+                const modal = document.getElementById('loan-modal');
+                const form = document.getElementById('loan-form');
+                
+                if (!modal || !form) return;
+                
+                form.reset();
+                const idInput = document.getElementById('loan-id');
+                if (idInput) idInput.value = '';
+                
+                const dateInput = document.getElementById('loan-date');
+                if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+                
+                if (editId) {
+                    const loan = this.data.loans.find(l => l.id === editId);
+                    if (!loan) {
+                        this.showToast('Loan not found');
+                        return;
+                    }
+                    
+                    document.getElementById('loan-modal-title').textContent = 'Edit Loan';
+                    idInput.value = loan.id;
+                    document.getElementById('loan-person').value = loan.person;
+                    document.getElementById('loan-amount').value = loan.amount;
+                    document.getElementById('loan-date').value = loan.date;
+                    document.getElementById('loan-note').value = loan.note || '';
+                    this.setLoanType(loan.type);
+                } else {
+                    document.getElementById('loan-modal-title').textContent = 'Add Loan';
+                    this.setLoanType('borrowed');
+                }
+                
+                modal.classList.add('active');
+            },
+
+            setLoanType(type) {
+                const typeInput = document.getElementById('loan-type');
+                const btnLent = document.getElementById('btn-lent');
+                const btnBorrowed = document.getElementById('btn-borrowed');
+                
+                if (typeInput) typeInput.value = type;
+                if (btnLent) btnLent.classList.toggle('active', type === 'lent');
+                if (btnBorrowed) btnBorrowed.classList.toggle('active', type === 'borrowed');
+            },
+
+            async saveLoan(e) {
+                e.preventDefault();
+                
+                try {
+                    const idInput = document.getElementById('loan-id');
+                    const amountInput = document.getElementById('loan-amount');
+                    const typeInput = document.getElementById('loan-type');
+                    const personInput = document.getElementById('loan-person');
+                    const dateInput = document.getElementById('loan-date');
+                    const noteInput = document.getElementById('loan-note');
+                    
+                    if (!amountInput || !personInput || !dateInput) {
+                        this.showToast('Form elements not found');
+                        return;
+                    }
+                    
+                    const amount = parseFloat(amountInput.value);
+                    const type = typeInput ? typeInput.value : 'borrowed';
+                    const person = personInput.value.trim();
+                    const date = dateInput.value;
+                    const note = noteInput ? noteInput.value.trim() : '';
+                    
+                    if (!amount || isNaN(amount) || amount <= 0) {
+                        this.showToast('Please enter a valid amount');
+                        return;
+                    }
+                    
+                    if (!person) {
+                        this.showToast('Please enter a person name');
+                        return;
+                    }
+                    
+                    const loan = {
+                        type: type,
+                        person: person,
+                        amount: amount,
+                        date: date,
+                        note: note,
+                        status: 'unpaid',
+                        timestamp: new Date().toISOString()
+                    };
+
+                    if (!db) {
+                        this.showToast('Database not ready');
+                        return;
+                    }
+                    
+                    const store = db.transaction('loans', 'readwrite').objectStore('loans');
+                    
+                    if (idInput && idInput.value) {
+                        const existing = this.data.loans.find(l => l.id === parseInt(idInput.value));
+                        loan.id = parseInt(idInput.value);
+                        loan.status = existing ? existing.status : 'unpaid';
+                        
+                        await new Promise((resolve, reject) => {
+                            const request = store.put(loan);
+                            request.onsuccess = () => resolve();
+                            request.onerror = () => reject(request.error);
+                        });
+                        
+                        const idx = this.data.loans.findIndex(l => l.id === loan.id);
+                        if (idx !== -1) this.data.loans[idx] = loan;
+                    } else {
+                        const newId = await new Promise((resolve, reject) => {
+                            const request = store.add(loan);
+                            request.onsuccess = () => resolve(request.result);
+                            request.onerror = () => reject(request.error);
+                        });
+                        
+                        loan.id = newId;
+                        
+                        if (!Array.isArray(this.data.loans)) {
+                            this.data.loans = [];
+                        }
+                        this.data.loans.push(loan);
+                    }
+
+                    this.closeModal('loan-modal');
+                    this.updateUI();
+                    this.showToast(idInput && idInput.value ? 'Loan updated' : 'Loan added');
+                } catch (error) {
+                    console.error('Save loan error:', error);
+                    this.showToast('Error saving loan');
+                }
+            },
+
+            async toggleLoanStatus(id) {
+                const loan = this.data.loans.find(l => l.id === id);
+                if (!loan) return;
+                
+                const newStatus = loan.status === 'paid' ? 'unpaid' : 'paid';
+                
+                try {
+                    loan.status = newStatus;
+                    
+                    if (!db) return;
+                    
+                    await new Promise((resolve, reject) => {
+                        const store = db.transaction('loans', 'readwrite').objectStore('loans');
+                        const request = store.put(loan);
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    if (newStatus === 'paid') {
+                        const txStore = db.transaction('transactions', 'readwrite').objectStore('transactions');
+                        const transaction = {
+                            type: loan.type === 'lent' ? 'income' : 'expense',
+                            amount: loan.amount,
+                            category: 'Other Income',
+                            date: new Date().toISOString().split('T')[0],
+                            note: `Loan ${loan.type === 'lent' ? 'repaid by' : 'paid to'}: ${loan.person}`,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        const newId = await new Promise((resolve, reject) => {
+                            const request = txStore.add(transaction);
+                            request.onsuccess = () => resolve(request.result);
+                            request.onerror = () => reject(request.error);
+                        });
+                        
+                        transaction.id = newId;
+                        
+                        if (!Array.isArray(this.data.transactions)) {
+                            this.data.transactions = [];
+                        }
+                        this.data.transactions.push(transaction);
+                        this.showToast('Loan paid & transaction created');
+                    } else {
+                        this.showToast('Loan marked as unpaid');
+                    }
+                    
+                    this.updateUI();
+                } catch (error) {
+                    console.error('Toggle loan error:', error);
+                    this.showToast('Error updating loan');
+                }
+            },
+
+            async deleteLoan(id) {
+                if (!confirm('Delete this loan?')) return;
+                try {
+                    if (!db) return;
+                    
+                    await new Promise((resolve, reject) => {
+                        const store = db.transaction('loans', 'readwrite').objectStore('loans');
+                        const request = store.delete(id);
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    if (!Array.isArray(this.data.loans)) {
+                        this.data.loans = [];
+                    }
+                    this.data.loans = this.data.loans.filter(l => l.id !== id);
+                    this.updateUI();
+                    this.showToast('Loan deleted');
+                } catch (error) {
+                    this.showToast('Error deleting loan');
+                }
+            },
+
+            filterLoans(filter) {
+                document.querySelectorAll('#page-loans .filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase().includes(filter)) btn.classList.add('active');
+                });
+                this.renderLoans(filter);
+            },
+
+            // UI Updates
+            updateUI() {
+                // Ensure arrays are initialized
+                if (!Array.isArray(this.data.transactions)) {
+                    this.data.transactions = [];
+                }
+                if (!Array.isArray(this.data.loans)) {
+                    this.data.loans = [];
+                }
+                
+                this.updateDashboard();
+                this.renderTransactions();
+                this.renderLoans();
+                if (this.data.currentPage === 'reports') {
+                    this.updateCharts();
+                }
+            },
+
+            updateDashboard() {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                
+                // Ensure arrays
+                if (!Array.isArray(this.data.transactions)) {
+                    this.data.transactions = [];
+                }
+                
+                const monthTransactions = this.data.transactions.filter(t => {
+                    if (!t || !t.date) return false;
+                    const date = new Date(t.date);
+                    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+                });
+
+                const income = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + (t.amount || 0), 0);
+                const expense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0);
+                const balance = income - expense;
+
+                const balanceEl = document.getElementById('total-balance');
+                const incomeEl = document.getElementById('month-income');
+                const expenseEl = document.getElementById('month-expense');
+                
+                if (balanceEl) balanceEl.textContent = this.formatMoney(balance);
+                if (incomeEl) incomeEl.textContent = `+${this.formatMoney(income)}`;
+                if (expenseEl) expenseEl.textContent = `-${this.formatMoney(expense)}`;
+
+                // Budget ring
+                const budget = this.data.settings.budget || 2000;
+                const budgetPercent = budget > 0 ? Math.min((expense / budget) * 100, 100) : 0;
+                const circumference = 2 * Math.PI * 36;
+                const offset = circumference - (budgetPercent / 100) * circumference;
+                
+                const ring = document.getElementById('budget-ring');
+                if (ring) {
+                    ring.style.strokeDashoffset = offset;
+                    ring.style.strokeDasharray = circumference;
+                }
+                
+                const percentEl = document.getElementById('budget-percent');
+                if (percentEl) percentEl.textContent = Math.round(budgetPercent) + '%';
+                
+                const budgetText = document.getElementById('budget-text');
+                if (budgetText) budgetText.textContent = `${this.formatMoney(expense)} / ${this.formatMoney(budget)}`;
+                
+                const warning = document.getElementById('budget-warning');
+                if (warning) {
+                    if (budgetPercent > 90) {
+                        warning.style.display = 'block';
+                        warning.textContent = '⚠️ Over budget!';
+                        warning.style.color = 'var(--danger)';
+                        if (ring) ring.style.stroke = '#E74C3C';
+                    } else if (budgetPercent > 70) {
+                        warning.style.display = 'block';
+                        warning.textContent = '⚠️ Approaching limit';
+                        warning.style.color = 'var(--warning)';
+                        if (ring) ring.style.stroke = '#F1C40F';
+                    } else {
+                        warning.style.display = 'none';
+                        if (ring) ring.style.stroke = '#2ECC71';
+                    }
+                }
+
+                // Loan summary
+                if (!Array.isArray(this.data.loans)) {
+                    this.data.loans = [];
+                }
+                
+                const lent = this.data.loans.filter(l => l.type === 'lent' && l.status === 'unpaid').reduce((sum, l) => sum + (l.amount || 0), 0);
+                const borrowed = this.data.loans.filter(l => l.type === 'borrowed' && l.status === 'unpaid').reduce((sum, l) => sum + (l.amount || 0), 0);
+                const net = lent - borrowed;
+
+                const lentEl = document.getElementById('total-lent');
+                const borrowedEl = document.getElementById('total-borrowed');
+                const netEl = document.getElementById('loan-net');
+                
+                if (lentEl) lentEl.textContent = this.formatMoney(lent);
+                if (borrowedEl) borrowedEl.textContent = this.formatMoney(borrowed);
+                if (netEl) {
+                    netEl.textContent = (net >= 0 ? '+' : '') + this.formatMoney(net);
+                    netEl.style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
+                }
+
+                // Loan progress ring
+                const totalLoans = this.data.loans.length;
+                const paidLoans = this.data.loans.filter(l => l.status === 'paid').length;
+                const loanPercent = totalLoans > 0 ? (paidLoans / totalLoans) * 100 : 0;
+                const loanOffset = circumference - (loanPercent / 100) * circumference;
+                
+                const loanRing = document.getElementById('loan-ring');
+                if (loanRing) {
+                    loanRing.style.strokeDashoffset = loanOffset;
+                    loanRing.style.strokeDasharray = circumference;
+                }
+                
+                const loanPercentEl = document.getElementById('loan-percent');
+                if (loanPercentEl) loanPercentEl.textContent = Math.round(loanPercent) + '%';
+                
+                const loanProgressText = document.getElementById('loan-progress-text');
+                if (loanProgressText) loanProgressText.textContent = `${paidLoans} paid / ${totalLoans} total`;
+
+                // Recent transactions
+                const recent = [...this.data.transactions].sort((a, b) => {
+                    if (!a.date || !b.date) return 0;
+                    return new Date(b.date) - new Date(a.date);
+                }).slice(0, 5);
+                
+                this.renderTransactionList('recent-transactions', recent, true);
+            },
+
+            renderTransactions(filter = 'all') {
+                if (!Array.isArray(this.data.transactions)) {
+                    this.data.transactions = [];
+                }
+                
+                let filtered = [...this.data.transactions];
+                if (filter !== 'all') {
+                    filtered = filtered.filter(t => t && t.type === filter);
+                }
+                filtered.sort((a, b) => {
+                    if (!a.date || !b.date) return 0;
+                    return new Date(b.date) - new Date(a.date);
+                });
+                this.renderTransactionList('all-transactions', filtered);
+            },
+
+            renderTransactionList(elementId, transactions, limit = false) {
+                const container = document.getElementById(elementId);
+                if (!container) return;
+                
+                if (!Array.isArray(transactions) || transactions.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No transactions</p></div>';
+                    return;
+                }
+
+                container.innerHTML = transactions.map(t => {
+                    if (!t) return '';
+                    return `
+                    <div class="transaction-item" onclick="${limit ? `app.navigate('transactions'); setTimeout(() => app.openTransactionModal(${t.id}), 100)` : `app.openTransactionModal(${t.id})`}">
+                        <div class="transaction-info">
+                            <div class="transaction-icon ${t.type}">
+                                ${this.getCategoryIcon(t.category)}
+                            </div>
+                            <div class="transaction-details">
+                                <h4>${t.category || 'Unknown'}</h4>
+                                <p>${t.date || 'No date'}${t.note ? ' • ' + t.note : ''}</p>
+                            </div>
+                        </div>
+                        <div class="transaction-amount ${t.type}">
+                            ${t.type === 'income' ? '+' : '-'}${this.formatMoney(t.amount)}
+                        </div>
+                    </div>
+                    ${!limit ? `
+                    <div class="transaction-actions">
+                        <button class="btn-small btn-edit" onclick="event.stopPropagation(); app.openTransactionModal(${t.id})">Edit</button>
+                        <button class="btn-small btn-delete" onclick="event.stopPropagation(); app.deleteTransaction(${t.id})">Delete</button>
+                    </div>
+                    ` : ''}
+                `;
+                }).join('');
+            },
+
+            renderLoans(filter = 'all') {
+                const container = document.getElementById('loans-list');
+                if (!container) return;
+                
+                if (!Array.isArray(this.data.loans)) {
+                    this.data.loans = [];
+                }
+                
+                let filtered = [...this.data.loans];
+                if (filter !== 'all') {
+                    filtered = filtered.filter(l => l && l.type === filter);
+                }
+                filtered.sort((a, b) => {
+                    if (!a.date || !b.date) return 0;
+                    return new Date(b.date) - new Date(a.date);
+                });
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No loans</p></div>';
+                    return;
+                }
+
+                container.innerHTML = filtered.map(l => {
+                    if (!l) return '';
+                    return `
+                    <div class="glass-card loan-card ${l.type}">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div style="flex: 1; min-width: 0;">
+                                <h4 style="font-size: 18px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${l.person || 'Unknown'}</h4>
+                                <p style="font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${l.date || 'No date'}${l.note ? ' • ' + l.note : ''}</p>
+                            </div>
+                            <div style="text-align: right; flex-shrink: 0; margin-left: 8px;">
+                                <div style="font-size: 20px; font-weight: 700; color: ${l.type === 'lent' ? 'var(--success)' : 'var(--accent)'};">
+                                    ${l.type === 'lent' ? '+' : '-'}${this.formatMoney(l.amount)}
+                                </div>
+                                <span class="loan-status ${l.status || 'unpaid'}">${l.status || 'unpaid'}</span>
+                            </div>
+                        </div>
+                        <div class="transaction-actions">
+                            <button class="btn-small btn-edit" onclick="event.stopPropagation(); app.openLoanModal(${l.id})">Edit</button>
+                            <button class="btn-small" style="background: ${l.status === 'paid' ? 'var(--warning)' : 'var(--success)'}; color: white;" 
+                                    onclick="event.stopPropagation(); app.toggleLoanStatus(${l.id})">
+                                ${l.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
+                            </button>
+                            <button class="btn-small btn-delete" onclick="event.stopPropagation(); app.deleteLoan(${l.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            },
+
+            // Charts
+            updateCharts() {
+                if (!document.getElementById('page-reports').classList.contains('active')) return;
+                if (typeof Chart === 'undefined') {
+                    setTimeout(() => this.updateCharts(), 100);
+                    return;
+                }
+
+                const month = document.getElementById('report-month').value;
+                const year = document.getElementById('report-year').value;
+
+                if (!Array.isArray(this.data.transactions)) {
+                    this.data.transactions = [];
+                }
+
+                // Monthly expense chart
+                const daysInMonth = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
+                const dailyExpenses = new Array(daysInMonth).fill(0);
+                
+                this.data.transactions.forEach(t => {
+                    if (t && t.date && t.date.startsWith(month) && t.type === 'expense') {
+                        const day = parseInt(t.date.split('-')[2]) - 1;
+                        if (day >= 0 && day < daysInMonth) {
+                            dailyExpenses[day] += (t.amount || 0);
+                        }
+                    }
+                });
+
+                this.createChart('monthlyChart', 'line', {
+                    labels: Array.from({length: daysInMonth}, (_, i) => i + 1),
+                    datasets: [{
+                        label: 'Daily Expense',
+                        data: dailyExpenses,
+                        borderColor: '#E74C3C',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
+                    }]
+                });
+
+                // Yearly data
+                const monthlyExpenses = new Array(12).fill(0);
+                const monthlyIncome = new Array(12).fill(0);
+                
+                this.data.transactions.forEach(t => {
+                    if (t && t.date && t.date.startsWith(year)) {
+                        const m = parseInt(t.date.split('-')[1]) - 1;
+                        if (m >= 0 && m < 12) {
+                            if (t.type === 'expense') {
+                                monthlyExpenses[m] += (t.amount || 0);
+                            } else {
+                                monthlyIncome[m] += (t.amount || 0);
+                            }
+                        }
+                    }
+                });
+
+                this.createChart('yearlyChart', 'bar', {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Monthly Expense',
+                        data: monthlyExpenses,
+                        backgroundColor: 'rgba(108, 99, 255, 0.6)',
+                        borderColor: '#6C63FF',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                });
+
+                this.createChart('comparisonChart', 'bar', {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Income',
+                        data: monthlyIncome,
+                        backgroundColor: 'rgba(46, 204, 113, 0.6)',
+                        borderColor: '#2ECC71',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }, {
+                        label: 'Expense',
+                        data: monthlyExpenses,
+                        backgroundColor: 'rgba(231, 76, 60, 0.6)',
+                        borderColor: '#E74C3C',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                });
+
+                // Category donut chart
+                const categoryTotals = {};
+                this.data.transactions.forEach(t => {
+                    if (t && t.type === 'expense' && t.category) {
+                        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + (t.amount || 0);
+                    }
+                });
+
+                const categories = Object.keys(categoryTotals);
+                const values = Object.values(categoryTotals);
+                const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#F9CA24', '#6C5CE7', '#FD79A8', '#A29BFE', '#00B894', '#0984E3'];
+
+                this.createChart('categoryChart', 'doughnut', {
+                    labels: categories.length ? categories : ['No Data'],
+                    datasets: [{
+                        data: values.length ? values : [1],
+                        backgroundColor: categories.length ? colors : ['#cccccc'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                }, {
+                    cutout: '70%',
+                    plugins: {
+                        legend: { 
+                            position: 'right',
+                            labels: { boxWidth: 12, padding: 10 }
+                        }
+                    }
+                });
+            },
+
+            createChart(canvasId, type, data, extraOptions = {}) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+                
+                const ctx = canvas.getContext('2d');
+                
+                if (this.data.charts[canvasId]) {
+                    this.data.charts[canvasId].destroy();
+                }
+
+                const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
+                const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+
+                this.data.charts[canvasId] = new Chart(ctx, {
+                    type: type,
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: { 
+                                    color: textColor,
+                                    font: { size: 11 }
+                                }
+                            }
+                        },
+                        scales: type !== 'doughnut' ? {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: gridColor },
+                                ticks: { color: textColor, font: { size: 10 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: textColor, font: { size: 10 } }
+                            }
+                        } : {},
+                        ...extraOptions
+                    }
+                });
+            },
+
+            // Settings
+            async setCurrency(curr) {
+                this.data.settings.currency = curr;
+                await this.saveSetting('currency', curr);
+                this.updateUI();
+                this.showToast(`Currency set to ${curr}`);
+            },
+
+            async setBudget(amount) {
+                const val = parseFloat(amount);
+                if (isNaN(val) || val < 0) {
+                    this.showToast('Invalid budget amount');
+                    return;
+                }
+                this.data.settings.budget = val;
+                await this.saveSetting('budget', val);
+                this.updateUI();
+                this.showToast('Budget updated');
+            },
+
+            async setMonthStart(day) {
+                this.data.settings.monthStart = parseInt(day);
+                await this.saveSetting('monthStart', this.data.settings.monthStart);
+                this.showToast('Month start day updated');
+            },
+
+            async toggleTheme() {
+                this.data.settings.darkMode = !this.data.settings.darkMode;
+                await this.saveSetting('darkMode', this.data.settings.darkMode);
+                
+                const toggle = document.getElementById('theme-toggle');
+                if (this.data.settings.darkMode) {
+                    document.documentElement.removeAttribute('data-theme');
+                    if (toggle) toggle.classList.add('active');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    if (toggle) toggle.classList.remove('active');
+                }
+                
+                setTimeout(() => this.updateCharts(), 100);
+                this.showToast(this.data.settings.darkMode ? 'Dark mode enabled' : 'Light mode enabled');
+            },
+
+            async saveSetting(key, value) {
+                try {
+                    if (!db) return;
+                    const store = db.transaction('settings', 'readwrite').objectStore('settings');
+                    await new Promise((resolve, reject) => {
+                        const request = store.put({ key, value });
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                } catch (error) {
+                    console.error('Save setting error:', error);
+                }
+            },
+
+            async resetAllData() {
+                if (!confirm('⚠️ WARNING: This will delete ALL data permanently. Continue?')) return;
+                if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+
+                try {
+                    if (!db) return;
+                    
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction('transactions', 'readwrite');
+                        const store = tx.objectStore('transactions');
+                        const request = store.clear();
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction('loans', 'readwrite');
+                        const store = tx.objectStore('loans');
+                        const request = store.clear();
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    this.data.transactions = [];
+                    this.data.loans = [];
+                    this.updateUI();
+                    this.showToast('All data reset successfully');
+                } catch (error) {
+                    console.error('Reset error:', error);
+                    this.showToast('Error resetting data');
+                }
+            },
+
+            // Utilities
+            formatMoney(amount) {
+                const curr = this.data.settings.currency || '$';
+                const num = parseFloat(amount) || 0;
+                return curr + num.toFixed(2);
+            },
+
+            getCategoryIcon(category) {
+                const allCats = [...this.categories.income, ...this.categories.expense];
+                const cat = allCats.find(c => c.value === category);
+                return cat ? cat.icon : '💰';
+            },
+
+            closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) modal.classList.remove('active');
+            },
+
+            showToast(message) {
+                document.querySelectorAll('.toast').forEach(t => t.remove());
+                
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(-50%) translateY(20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            },
+
+            refreshData() {
+                this.loadData().then(() => {
+                    this.updateUI();
+                    this.showToast('Data refreshed');
+                });
+            }
+        };
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => app.init());
+        } else {
+            app.init();
+        }
+    </script>
+</body>
+</html>
