@@ -917,12 +917,15 @@
         </div>
 
         <div class="chart-container">
-            <div class="chart-header">
-                <span class="chart-title">Monthly Expense</span>
-                <input type="month" id="report-month" class="form-input" style="width: auto; padding: 8px;" onchange="app.updateCharts()">
-            </div>
-            <canvas id="monthlyChart"></canvas>
+    <div class="chart-header">
+        <span class="chart-title">Monthly Expense</span>
+        <input type="month" id="report-month" class="form-input" style="width: auto; padding: 8px;" onchange="app.updateCharts()">
+    </div>
+    <div style="position: relative; height: 250px; width: 100%;">
+        <canvas id="monthlyChart"></canvas>
+    </div>
         </div>
+        
 
         <div class="chart-container">
             <div class="chart-header">
@@ -933,20 +936,25 @@
                     <option value="2026">2026</option>
                 </select>
             </div>
+            <div style="position: relative; height: 250px; width: 100%;">
             <canvas id="yearlyChart"></canvas>
+        </div>
         </div>
 
         <div class="chart-container">
             <div class="chart-header">
                 <span class="chart-title">Income vs Expense</span>
             </div>
+            <div style="position: relative; height: 250px; width: 100%;">
             <canvas id="comparisonChart"></canvas>
+        </div>
         </div>
 
         <div class="chart-container">
             <div class="chart-header">
                 <span class="chart-title">Categories</span>
             </div>
+            <div style="position: relative; height: 250px; width: 100%;">
             <canvas id="categoryChart"></canvas>
         </div>
     </div>
