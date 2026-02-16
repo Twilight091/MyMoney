@@ -2192,47 +2192,55 @@ if ('serviceWorker' in navigator) {
             },
 
             createChart(canvasId, type, data, extraOptions = {}) {
-                const canvas = document.getElementById(canvasId);
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                
-                if (this.data.charts[canvasId]) {
-                    this.data.charts[canvasId].destroy();
-                }
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    
+    // Set explicit dimensions to prevent overlap
+    const container = canvas.parentElement;
+    canvas.style.width = '100%';
+    canvas.style.height = '250px';
+    canvas.width = container.offsetWidth;
+    canvas.height = 250;
+    
+    const ctx = canvas.getContext('2d');
+    
+    if (this.data.charts[canvasId]) {
+        this.data.charts[canvasId].destroy();
+    }
 
-                const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
-                const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
+    const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
 
-                this.data.charts[canvasId] = new Chart(ctx, {
-                    type: type,
-                    data: data,
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                labels: { 
-                                    color: textColor,
-                                    font: { size: 11 }
-                                }
-                            }
-                        },
-                        scales: type !== 'doughnut' ? {
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: gridColor },
-                                ticks: { color: textColor, font: { size: 10 } }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: textColor, font: { size: 10 } }
-                            }
-                        } : {},
-                        ...extraOptions
+    this.data.charts[canvasId] = new Chart(ctx, {
+        type: type,
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { 
+                        color: textColor,
+                        font: { size: 11 }
                     }
-                });
+                }
             },
+            scales: type !== 'doughnut' ? {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor },
+                    ticks: { color: textColor, font: { size: 10 } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: textColor, font: { size: 10 } }
+                }
+            } : {},
+            ...extraOptions
+        }
+    });
+            }
+            
 
             // Settings
             async setCurrency(curr) {
