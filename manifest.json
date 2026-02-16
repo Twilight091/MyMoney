@@ -1,0 +1,26 @@
+{
+  "name": "MyMoney Pro",
+  "short_name": "MyMoney",
+  "description": "Offline personal finance tracker with budgeting, loans, and reports",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F1220",
+  "theme_color": "#6C63FF",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity"]
+}
