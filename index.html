@@ -544,15 +544,21 @@
         }
 
         .chart-container {
-            background: var(--surface);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid var(--border);
-            margin-bottom: 16px;
-            height: 300px;
-            position: relative;
-        }
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    height: auto;
+    min-height: 300px;
+    position: relative;
+    overflow: hidden;
+}
 
+.chart-container canvas {
+    max-height: 250px !important;
+    width: 100% !important;
+}
         .chart-header {
             display: flex;
             justify-content: space-between;
