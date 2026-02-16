@@ -1397,9 +1397,21 @@ if ('serviceWorker' in navigator) {
             },
 
             setupEventListeners() {
-                window.addEventListener('online', () => this.showToast('Back online'));
-                window.addEventListener('offline', () => this.showToast('Offline mode'));
-            },
+    window.addEventListener('online', () => this.showToast('Back online'));
+    window.addEventListener('offline', () => this.showToast('Offline mode'));
+    
+    // Fix charts on resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (this.data.currentPage === 'reports') {
+                this.updateCharts();
+            }
+        }, 250);
+    });
+},
+            
 
             navigate(page) {
                 this.data.currentPage = page;
