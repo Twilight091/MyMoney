@@ -21,13 +21,6 @@ A secure, offline-first personal finance tracker built as a Progressive Web App 
 2. Click "Add to Home Screen" when prompted
 3. Start tracking your finances!
 
-## 🛠️ Tech Stack
-
-- HTML5, CSS3, JavaScript (ES6+)
-- IndexedDB for local storage
-- Chart.js for charts
-- Service Worker for offline support
-
 ## 🔒 Privacy
 
 - No server - everything runs in your browser
