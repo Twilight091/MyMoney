@@ -905,45 +905,54 @@
     </div>
 
     <!-- Reports Page -->
-    <div id="page-reports" class="page">
-        <div class="header">
-            <h1>Reports</h1>
-        </div>
+<div id="page-reports" class="page">
+    <div class="header">
+        <h1>Reports</h1>
+    </div>
 
-        <div class="chart-container">
-            <div class="chart-header">
-                <span class="chart-title">Monthly Expense</span>
-                <input type="month" id="report-month" class="form-input" style="width: auto; padding: 8px;" onchange="app.updateCharts()">
-            </div>
+    <div class="glass-card" style="margin-bottom: 20px;">
+        <div class="chart-header">
+            <span class="chart-title">Monthly Expense</span>
+            <input type="month" id="report-month" class="form-input" style="width: auto; padding: 8px;" onchange="app.updateCharts()">
+        </div>
+        <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="monthlyChart"></canvas>
         </div>
+    </div>
 
-        <div class="chart-container">
-            <div class="chart-header">
-                <span class="chart-title">Yearly Overview</span>
-                <select id="report-year" class="form-select" style="width: auto; padding: 8px;" onchange="app.updateCharts()">
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
-                    <option value="2026">2026</option>
-                </select>
-            </div>
+    <div class="glass-card" style="margin-bottom: 20px;">
+        <div class="chart-header">
+            <span class="chart-title">Yearly Overview</span>
+            <select id="report-year" class="form-select" style="width: auto; padding: 8px;" onchange="app.updateCharts()">
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+            </select>
+        </div>
+        <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="yearlyChart"></canvas>
         </div>
+    </div>
 
-        <div class="chart-container">
-            <div class="chart-header">
-                <span class="chart-title">Income vs Expense</span>
-            </div>
+    <div class="glass-card" style="margin-bottom: 20px;">
+        <div class="chart-header">
+            <span class="chart-title">Income vs Expense</span>
+        </div>
+        <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="comparisonChart"></canvas>
         </div>
+    </div>
 
-        <div class="chart-container">
-            <div class="chart-header">
-                <span class="chart-title">Categories</span>
-            </div>
+    <div class="glass-card" style="margin-bottom: 100px;">
+        <div class="chart-header">
+            <span class="chart-title">Categories</span>
+        </div>
+        <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="categoryChart"></canvas>
         </div>
     </div>
+</div>
+    
 
     <!-- Loans Page -->
     <div id="page-loans" class="page">
