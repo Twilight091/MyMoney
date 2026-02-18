@@ -2324,9 +2324,9 @@
 
             // Utilities
             formatMoney(amount) {
-                const curr = this.data.settings.currency || '$';
-                const num = parseFloat(amount) || 0;
-                return curr + num.toFixed(2);
+    const curr = this.data.settings.currency || '$';
+    const num = parseFloat(amount) || 0;
+    return curr + Math.round(num).toLocaleString();
             },
 
             getCategoryIcon(category) {
