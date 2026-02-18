@@ -1848,25 +1848,31 @@
             },
 
             updateDashboard() {
-                const now = new Date();
-                const currentMonth = now.getMonth();
-                const currentYear = now.getFullYear();
-                
-                // Ensure arrays
-                if (!Array.isArray(this.data.transactions)) {
-                    this.data.transactions = [];
-                }
-                
-                const monthTransactions = this.data.transactions.filter(t => {
-                    if (!t || !t.date) return false;
-                    const date = new Date(t.date);
-                    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-                });
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Ensure arrays
+    if (!Array.isArray(this.data.transactions)) {
+        this.data.transactions = [];
+    }
+    
+    // ALL-TIME BALANCE CALCULATION
+    const allTransactions = this.data.transactions;
+    const totalIncome = allTransactions.filter(t => t && t.type === 'income').reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    const totalExpense = allTransactions.filter(t => t && t.type === 'expense').reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    const balance = totalIncome - totalExpense;
+    
+    // Monthly stats (for display purposes)
+    const monthTransactions = this.data.transactions.filter(t => {
+        if (!t || !t.date) return false;
+        const date = new Date(t.date);
+        return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    });
 
-                const income = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + (t.amount || 0), 0);
-                const expense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0);
-                const balance = income - expense;
-
+    const income = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + (t.amount || 0), 0);
+    const expense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0);
+                
                 const balanceEl = document.getElementById('total-balance');
                 const incomeEl = document.getElementById('month-income');
                 const expenseEl = document.getElementById('month-expense');
