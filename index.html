@@ -2110,7 +2110,11 @@
                     }]
                 });
 
-                // Yearly data
+                 // Yearly data - Total Income vs Expense for the year
+                let yearlyIncome = 0;
+                let yearlyExpense = 0;
+                
+                // Keep monthly arrays for other charts
                 const monthlyExpenses = new Array(12).fill(0);
                 const monthlyIncome = new Array(12).fill(0);
                 
@@ -2120,25 +2124,31 @@
                         if (m >= 0 && m < 12) {
                             if (t.type === 'expense') {
                                 monthlyExpenses[m] += (t.amount || 0);
+                                yearlyExpense += (t.amount || 0);
                             } else {
                                 monthlyIncome[m] += (t.amount || 0);
+                                yearlyIncome += (t.amount || 0);
                             }
                         }
                     }
                 });
-
                 this.createChart('yearlyChart', 'bar', {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    labels: ['Total Income', 'Total Expense'],
                     datasets: [{
-                        label: 'Monthly Expense',
-                        data: monthlyExpenses,
-                        backgroundColor: 'rgba(108, 99, 255, 0.6)',
-                        borderColor: '#6C63FF',
-                        borderWidth: 1,
-                        borderRadius: 6
+                        label: year,
+                        data: [yearlyIncome, yearlyExpense],
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.8)',
+                            'rgba(231, 76, 60, 0.8)'
+                        ],
+                        borderColor: [
+                            '#2ECC71',
+                            '#E74C3C'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
                     }]
                 });
-
                 this.createChart('comparisonChart', 'bar', {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     datasets: [{
