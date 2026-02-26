@@ -30,6 +30,6 @@ A secure, offline-first personal finance tracker built as a Progressive Web App 
 
 ## 📝 License
 
-MIT License - see LICENSE file for details.
+Apache License - see LICENSE file for details.
 
 Built with passion by Twilight091 & Uncagedraptor80
